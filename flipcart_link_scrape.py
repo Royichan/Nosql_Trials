@@ -16,27 +16,38 @@ def scrape_flipkart_product(product_name):
     soup = BeautifulSoup(response.content, 'html.parser')
     page_numbers = soup.find_all('a', {'class': 'ge-49M'})
     total_pages = int(page_numbers[-1].text.strip())
-    print(total_pages)
+    #print(total_pages)
     products = []
     if total_pages > 1:
         for pg_num in range(1,total_pages):
-            print(len(products))
+            #print(len(products))
             url = f"https://www.flipkart.com/search?q={product_name}&page={pg_num}"
             next_page_response = requests.get(url, headers=headers)
             next_page = BeautifulSoup(response.content, 'html.parser')
             for item in soup.select('._2kHMtA'):
                 product = "https://www.flipkart.com" + item.select_one('._1fQZEK')['href']
                 products.append(product)
-    return products
+    else:
+        for item in soup.select('._2kHMtA'):
+            product = "https://www.flipkart.com" + item.select_one('._1fQZEK')['href']
+            products.append(product)
 
-x = scrape_flipkart_product("iphone 13")
+    final_products=[]
+    for i in range(0,len(products)-1):
+        query = product_name.replace(" ","-").lower()
+        if query in products[i].lower():
+            final_products.append(products[i])
+    
+    return final_products
+
+'''x = scrape_flipkart_product("iphone 13")
 x.append("")
 y=[]
 for i in range(0,len(x)-1):
     query = "Iphone 13".replace(" ","-").lower()
     if query in x[i].lower():
         y.append(x[i])
-print("true links : ",len(y))
+print("true links : ",len(y))'''
 
 #for i in scrape_flipkart_product("iphone 13"):
 #    print(i)
