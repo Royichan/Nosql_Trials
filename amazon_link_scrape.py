@@ -1,22 +1,23 @@
 import requests
-#import os
 from bs4 import BeautifulSoup
 import globalValues
 
+#function to scrape the first page
 def scrape_amazon_product(product_name):
     url = f"https://www.amazon.com/s?k={product_name}"
     headers = globalValues.get_headers()
     response = requests.get(url, headers=headers)
     print(response)
-    product_search_result = BeautifulSoup(response.content, 'html.parser')
     products = []
+    #getting individual product links
+    product_search_result = BeautifulSoup(response.content, 'html.parser')
     for item in product_search_result.select('[data-component-type="s-search-result"]'):
         product = "https://www.amazon.com" + item.select_one('.a-link-normal')['href']
         products.append(product)
     return products
 
 
-
+#function to scrape multiple pages
 def scrape_amazon_product_multiple_pages(product_name):
     url = f"https://www.amazon.com/s?k={product_name}"
     headers = globalValues.get_headers()

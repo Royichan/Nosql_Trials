@@ -2,19 +2,21 @@ import requests
 from bs4 import BeautifulSoup
 import globalValues
 
+#function to scrape the first page
 def scrape_flipkart_product(product_name):
     url = f"https://www.flipkart.com/search?q={product_name}"
     headers = globalValues.get_headers()
     response = requests.get(url, headers=headers)
     print(response)
     products = []
+    #getting individual product links
     product_search_result = BeautifulSoup(response.content, 'html.parser')
     for item in product_search_result.select('._4ddWXP'):
         product = "https://www.flipkart.com" + item.select_one('.s1Q9rs')['href']
         products.append(product)
     return products
 
-
+#function to scrape multiple pages
 def scrape_flipkart_product_multiple_pages(product_name):
     url = f"https://www.flipkart.com/search?q={product_name}"
     headers = globalValues.get_headers()
