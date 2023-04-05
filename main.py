@@ -5,33 +5,21 @@ import pandas as pd
 import requests
 from requests_html import HTMLSession
 import time
+import globalValues
 
 #importing the amazon scrape code to main file
 from amazon_link_scrape import * 
 from flipcart_link_scrape import *
+
+session = HTMLSession()
+headers = globalValues.get_headers()
 
 #we got all links for the particular product
 amazon_products_links = scrape_amazon_product("Samsung Galaxy")
 #we got all links for flipcart products
 flipkart_products_links = scrape_flipkart_product("headset")
 
-#print(amazon_products_links)
-#print(flipkart_products_links)
 
-#scraping Amazon Product details using Beautiful soup
-
-
-session = HTMLSession()
-headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.31",
-    "Accept-Encoding":"gzip, deflate",
-    "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", 
-    "DNT":"1",
-    "Connection":"close",
-    "Upgrade-Insecure-Requests":"1"
-}
-
-'''
 for amazon_url in amazon_products_links:
     amazon_response = requests.get(amazon_url, headers=headers)
     amazon_page = bs(amazon_response.content,"html.parser")
@@ -56,7 +44,7 @@ for amazon_url in amazon_products_links:
     for comment in comment_list:
         prod_comment.append(comment.get_text().strip("\n"))
     #print("AMAZON : ",prod_comment)
-'''
+
  
 for flipkart_url in flipkart_products_links:    
     flipkart_response = requests.get(flipkart_url, headers=headers)

@@ -1,11 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
+import globalValues
 
 def scrape_flipkart_product(product_name):
     url = f"https://www.flipkart.com/search?q={product_name}"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
-    }
+    headers = globalValues.get_headers()
     response = requests.get(url, headers=headers)
     print(response)
     products = []
@@ -18,14 +17,7 @@ def scrape_flipkart_product(product_name):
 
 def scrape_flipkart_product_multiple_pages(product_name):
     url = f"https://www.flipkart.com/search?q={product_name}"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36",
-        "Accept-Encoding":"gzip, deflate",
-        "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", 
-        "DNT":"1",
-        "Connection":"close",
-        "Upgrade-Insecure-Requests":"1"
-    }
+    headers = globalValues.get_headers()
     response = requests.get(url, headers=headers)
     print(response)
     soup = BeautifulSoup(response.content, 'html.parser')
