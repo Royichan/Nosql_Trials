@@ -4,6 +4,21 @@ from bs4 import BeautifulSoup
 def scrape_flipkart_product(product_name):
     url = f"https://www.flipkart.com/search?q={product_name}"
     headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+    }
+    response = requests.get(url, headers=headers)
+    print(response)
+    products = []
+    product_search_result = BeautifulSoup(response.content, 'html.parser')
+    for item in product_search_result.select('._4ddWXP'):
+        product = "https://www.flipkart.com" + item.select_one('.s1Q9rs')['href']
+        products.append(product)
+    return products
+
+
+def scrape_flipkart_product_multiple_pages(product_name):
+    url = f"https://www.flipkart.com/search?q={product_name}"
+    headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36",
         "Accept-Encoding":"gzip, deflate",
         "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", 

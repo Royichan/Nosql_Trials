@@ -1,7 +1,34 @@
 import requests
+#import os
 from bs4 import BeautifulSoup
+#from dotenv import load_dotenv, find_dotenv
+
+#load_dotenv(find_dotenv())
+#headers = os.environ.get("HEADERS")
+
 
 def scrape_amazon_product(product_name):
+    url = f"https://www.amazon.com/s?k={product_name}"
+    headers = {
+        "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.39",
+        "Accept-Encoding":"gzip, deflate",
+        "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", 
+        "DNT":"1",
+        "Connection":"close",
+        "Upgrade-Insecure-Requests":"1"
+    }
+    response = requests.get(url, headers=headers)
+    print(response)
+    product_search_result = BeautifulSoup(response.content, 'html.parser')
+    products = []
+    for item in product_search_result.select('[data-component-type="s-search-result"]'):
+        product = "https://www.amazon.com" + item.select_one('.a-link-normal')['href']
+        products.append(product)
+    return products
+
+
+
+def scrape_amazon_product_multiple_pages(product_name):
     url = f"https://www.amazon.com/s?k={product_name}"
     headers = {
         "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.37",
@@ -39,6 +66,8 @@ def scrape_amazon_product(product_name):
             final_products.append(products[i])
 
     return final_products
+
+
 '''x = scrape_amazon_product("iphone 13")
 y=[]
 for i in range(0,len(x)-1):
