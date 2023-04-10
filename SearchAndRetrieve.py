@@ -168,21 +168,21 @@ def search_products(search_string):
         amazon_details = get_idividual_amazon_product_details(amazon_products_links)
 #########################lets add sentiment analyzer here#########################
         #uploading values to DB        
-        db.upload_flipkart_products(flipkart_details)
-        db.upload_amazon_products(amazon_details)
+        flipkart_db_flag = db.upload_flipkart_products(flipkart_details)
+        amazon_db_flag = db.upload_amazon_products(amazon_details)
     else:
         if flipkart_products_links is not None:
             flipkart_details = get_individual_flipkart_product_details(flipkart_products_links)
             print("Uploading Deatils to DB")
 #########################lets add sentiment analyzer here#########################            
-            db.upload_flipkart_products(flipkart_details)
+            flipkart_db_flag = db.upload_flipkart_products(flipkart_details)
         else:
             print("No flipkart products found")
 
         if amazon_products_links is not None:
             amazon_details = get_idividual_amazon_product_details(amazon_products_links)
 #########################lets add sentiment analyzer here#########################
-            db.upload_amazon_products(amazon_details)
+            amazon_db_flag = db.upload_amazon_products(amazon_details)
         else:
             print("No amazon products found")
 
