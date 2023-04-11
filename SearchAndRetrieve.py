@@ -88,10 +88,12 @@ def search_products(search_string):
             results["amazon"] = db.get_amazon(Ids[1]["amazonIds"])
         else:
             print("no")
-        print(results)
+        #print(results)
+        print("Completed Data Retrival from DB")
+        return results
     else:
         results = search_products_in_web(search_string.lower())
-        print(results)
+        #print(results)
+        print("Completed Data Retrival from Web")
+        return results
         #print(results["flipkart"],"\n\n\n\n\n",results["amazon"])
-
-search_products("pan")
