@@ -62,7 +62,7 @@ def get_individual_flipkart_product_details(flipkart_products_links):
         flipkart_original_price = flipkart_page.find("div", attrs={"class":"_3I9_wc _2p6lqe"})
         if flipkart_original_price is not None:
             flipkart_product["originalPrice"] = flipkart_original_price.text.strip()[1::].replace(",","")
-            flipkart_product["originalPrice"] = int(flipkart_product["originalPrice"])/60
+            flipkart_product["originalPrice"] = round(int(flipkart_product["originalPrice"])/60,2)
         else:
              flipkart_product["originalPrice"] = "No price found"
         #print("original price : ",flipkart_original_price)
@@ -70,7 +70,7 @@ def get_individual_flipkart_product_details(flipkart_products_links):
         flipkart_discount_price = flipkart_page.find("div", attrs={"class":"_30jeq3 _16Jk6d"})
         if flipkart_discount_price is not None:
             flipkart_product["discountPrice"] = flipkart_discount_price.text.strip()[1::].replace(",","")
-            flipkart_product["discountPrice"] = int(flipkart_product["discountPrice"])/60
+            flipkart_product["discountPrice"] = round(int(flipkart_product["discountPrice"])/60,2)
         else:
             flipkart_product["discountPrice"] = "No discount price"
         #print("discount price : ",flipkart_discount_price)
