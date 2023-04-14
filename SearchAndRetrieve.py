@@ -1,6 +1,7 @@
 import GlobalValues
 import ConnectDatabase as db
 import SentimentAnalyzer as snt
+from datetime import datetime
 
 #importing the amazon scrape code to main file
 import ScrapeAmazon as amzn
@@ -39,6 +40,7 @@ def search_products_in_web(search_string):
             print("Uploading documents to History DB")
             flipkart_history = {}
             flipkart_history["keyword"] = search_string
+            flipkart_history["date"] = str(datetime.today().date())
             flipkart_history["flipkartIds"] = flipkart_db_ids
             history_db_flag = db.insert_history(flipkart_history)
         else:
@@ -60,6 +62,7 @@ def search_products_in_web(search_string):
             print("Uploading documents to History DB")
             amazon_history = {}
             amazon_history["keyword"] = search_string
+            amazon_history["date"] = str(datetime.today().date())
             amazon_history["amazonIds"] = amazon_db_ids
             history_db_flag = db.insert_history(amazon_history)
         else:
@@ -72,6 +75,7 @@ def search_products_in_web(search_string):
 
 #function to search product and upload details
 def search_products(search_string):
+    print(f"Search Keyword : {search_string}")    
     search_flag,Ids = db.get_history(search_string.lower())
     if search_flag:
         print("Previously Searched Product")
@@ -81,13 +85,14 @@ def search_products(search_string):
             results["flipkart"] = db.get_flipkart(Ids[0]["flipkartIds"])
         else:
             results["flipkart"] = None
-            print("no")
+            print("no flip")
 
         if Ids[1]["amazonIds"] != "None":
             #print("yes",Ids[1]["amazonIds"])
             results["amazon"] = db.get_amazon(Ids[1]["amazonIds"])
         else:
-            print("no")
+            results["amazon"] = None
+            print("no ama")
         #print(results)
         print("Completed Data Retrival from DB")
         return results

@@ -1,12 +1,13 @@
 import pprint
 from pymongo import MongoClient
 import GlobalValues
+from datetime import datetime
 
 #establish database connection
 def get_database_connection():
     connection_string = GlobalValues.get_connection_password()
-    client = MongoClient(connection_string)
     try:
+        client = MongoClient(connection_string)
         client.admin.command('ping')
         print("MongoDB connected")
         database = client.ProductDatabase
@@ -14,10 +15,10 @@ def get_database_connection():
             print("Database Connected")
             return database
         except Exception as e:
-            print(f"Database connection error")
+            print(f"####Database connection error####")
             return None
     except Exception as e:
-        print(f"MongoDB connection error")
+        print(f"####MongoDB connection error####")
         return None
     
 def upload_flipkart_products(flipkart_products):
@@ -30,8 +31,10 @@ def upload_flipkart_products(flipkart_products):
             print(f"Flipkart Produts Uploaded to DB: {flag.acknowledged}")
             return flag.inserted_ids
         except Exception as e:
-            print(f"Flipkart collection connection error")
+            print(f"####Flipkart collection connection error####")
             return None
+    else:
+        return None
         
 
 def upload_amazon_products(amazon_products):
@@ -44,8 +47,10 @@ def upload_amazon_products(amazon_products):
             print(f"Amazon Produts Uploaded to DB: {flag.acknowledged}")
             return flag.inserted_ids
         except Exception as e:
-            print(f"Amazon collection connection error")
+            print(f"####Amazon collection connection error####")
             return None
+    else:
+        return None
 
 def insert_history(history):
     db = get_database_connection()
@@ -56,7 +61,9 @@ def insert_history(history):
             flag = history_db.insert_one(history)
             print(f"Uploaded history data to DB: {flag.acknowledged}")
         except Exception as e:
-            print(f"History collection connection error")
+            print(f"####History collection connection error while insertion####")
+    else:
+        return None
 
 def get_history(search_string):
     db = get_database_connection()
@@ -64,15 +71,17 @@ def get_history(search_string):
         try:
             history_db = db.History
             print("History collection connected")
-            count = history_db.count_documents({"keyword":search_string})
+            count = history_db.count_documents({"keyword":search_string,"date":str(datetime.today().date())})
             if count > 0:
-                history = history_db.find({"keyword":search_string})
+                history = history_db.find({"keyword":search_string,"date":str(datetime.today().date())})
                 return True,history
             else:
-                return False,None
+                return False,"None"
         except Exception as e:
-            print(f"History collection connection error")
-            return False,None
+            print(f"####History collection connection error while retrival####")
+            return False,"None"
+    else:
+        return False,"None"
         
 def get_flipkart(Ids):
     db = get_database_connection()
@@ -86,12 +95,14 @@ def get_flipkart(Ids):
                     prod = flipkart_db.find_one(id)
                     flipkart.append(prod)
                 except Exception:
-                    print("One flipkart product not retrieved from DB")
+                    print("####One flipkart product not retrieved from DB####")
                     continue
             return flipkart
         except Exception as e:
-            print(f"Flipkart collection connection error")
+            print(f"####Flipkart collection connection error####")
             return None
+    else:
+        return None
 
 def get_amazon(Ids):
     db = get_database_connection()
@@ -105,9 +116,11 @@ def get_amazon(Ids):
                     prod = amazon_db.find_one(id)
                     amazon.append(prod)
                 except Exception:
-                    print("One amazon product not retrieved from DB")
+                    print("####One amazon product not retrieved from DB####")
                     continue
             return amazon
         except Exception as e:
-            print(f"Amazon collection connection error")
+            print(f"####Amazon collection connection error####")
             return None
+    else:
+        return None

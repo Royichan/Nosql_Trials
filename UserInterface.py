@@ -1,145 +1,174 @@
-from math import ceil
-from tkinter import *
-import re
-import webbrowser
+import ttkbootstrap as ttk
+from tkinter import messagebox
+from ttkbootstrap.constants import *
 import SearchAndRetrieve as sr
+from math import ceil
+import webbrowser
 
-window = Tk()
-window.state("zoomed")
+class ProductSearch(ttk.Frame):
 
-def SearchPage():
-    pass
+    def __init__(self, master):
+        super().__init__(master, padding=15)
+        self.pack(fill=BOTH, expand=YES)
 
-def ResultPage():
-    results = sr.search_products("wall fan")
-    #print(results)
-    FlipkartFrame = Frame(window,borderwidth=1,relief=SOLID)
-    FlipkartFrame.grid(row=0, column=0, sticky="nsew")
-    #FlipkartFrame.pack(side=LEFT,fill=Y)
+        # application variables
+        self.term_var = ttk.StringVar(value='')
+        # header and labelframe option container
+        option_text = "Enter Product Name"
+        self.option_lf = ttk.Labelframe(self, text=option_text, padding=15)
+        self.option_lf.pack(fill=X, expand=YES, anchor=N)
 
-    AmazonFrame = Frame(window,borderwidth=1,relief=SOLID)
-    AmazonFrame.grid(row=0, column=1, sticky="nsew")
-    #AmazonFrame.pack(side=RIGHT,fill=Y)
+        self.create_term_row()
+        self.create_results_view()
 
-    window.grid_columnconfigure(0, weight=9)
-    window.grid_columnconfigure(1, weight=9)
+    def create_term_row(self):
+        """Add term row to labelframe"""
+        term_row = ttk.Frame(self.option_lf)
+        term_row.pack(fill=X, expand=YES, pady=5)
+        term_lbl = ttk.Label(term_row, text="Product", width=8)
+        term_lbl.pack(side=LEFT, padx=(15, 0))
+        term_ent = ttk.Entry(term_row, textvariable=self.term_var)
+        term_ent.pack(side=LEFT, fill=X, expand=YES, padx=5)
+        search_btn = ttk.Button(
+            master=term_row, 
+            text="Search", 
+            command=self.on_search, 
+            bootstyle=OUTLINE, 
+            width=8
+        )
+        search_btn.pack(side=LEFT, padx=5)
 
-    flpkt = Label(FlipkartFrame, text="FLIPKART")
-    flpkt.grid(row=0,column=0)
-    
+    def openweb(self,event):
+        item = event.widget.focus()
+        row = event.widget.index(item)
+        if results['flipkart'] != None and results['amazon'] != None:
+            webbrowser.open_new_tab(results['flipkart'][row]["productUrl"])
+            webbrowser.open_new_tab(results['amazon'][row]["productUrl"])
+        elif results['flipkart'] == None and results['amazon'] != None:
+            webbrowser.open_new_tab(results['amazon'][row]["productUrl"])
+        elif results['flipkart'] != None and results['amazon'] == None:
+            webbrowser.open_new_tab(results['flipkart'][row]["productUrl"])
+        else:
+            pass
 
-    amzn = Label(AmazonFrame, text="AMAZON")
-    amzn.grid(row=0,column=1)
+    def create_results_view(self):
+        """Add result treeview to labelframe"""
+        self.Tree = ttk.Treeview(
+            master=self, 
+            bootstyle=PRIMARY, 
+            columns=("FlipkartProduct","FlipkartPrice","FlipkartDiscountPrice","FlipkartRatings","FlipkartComments",
+                               "AmazonProduct","AmazonPrice","AmazonDiscountPrice","AmazonRatings","AmazonComments"),
+            show=HEADINGS,
+            height=40,
+            padding=(2),
+        )
+        
+        # setup columns and use `scale_size` to adjust for resolution
+        self.Tree.column("FlipkartProduct",anchor=W,stretch=YES)
+        self.Tree.column("FlipkartPrice",anchor=W,width=100)
+        self.Tree.column("FlipkartDiscountPrice",anchor=W,width=130)
+        self.Tree.column("FlipkartRatings",anchor=W,width=120)
+        self.Tree.column("FlipkartComments",anchor=W,stretch=YES)
+        self.Tree.column("AmazonProduct",anchor=W,stretch=YES)
+        self.Tree.column("AmazonPrice",anchor=W,width=100)
+        self.Tree.column("AmazonDiscountPrice",anchor=W,width=130)
+        self.Tree.column("AmazonRatings",anchor=W,width=120)
+        self.Tree.column("AmazonComments",anchor=W,stretch=YES)
 
+        self.Tree.heading("FlipkartProduct",text="Flipkart Product",anchor=W)
+        self.Tree.heading("FlipkartPrice",text="Flipkart Price",anchor=W)
+        self.Tree.heading("FlipkartDiscountPrice",text="Flipkart Discount Price",anchor=W)
+        self.Tree.heading("FlipkartRatings",text="Flipkart Ratings",anchor=W)
+        self.Tree.heading("FlipkartComments",text="Flipkart Reviews",anchor=W)
+        self.Tree.heading("AmazonProduct",text="Amazon Product",anchor=W)
+        self.Tree.heading("AmazonPrice",text="Amazon Price",anchor=W)
+        self.Tree.heading("AmazonDiscountPrice",text="Amazon Discount Price",anchor=W)
+        self.Tree.heading("AmazonRatings",text="Amazon Ratings",anchor=W)
+        self.Tree.heading("AmazonComments",text="Amazon Reviews",anchor=W)
 
-    if results["flipkart"] != None:
-        #headers
-        pd_title = Label(FlipkartFrame, text="Title")
-        pd_price = Label(FlipkartFrame, text="Price")
-        pd_discount = Label(FlipkartFrame, text="Discount Price")
-        pd_reviews = Label(FlipkartFrame, text="Ratings")
-        pd_comments = Label(FlipkartFrame, text="Comments")
-        pd_link = Label(FlipkartFrame,text="Product Link")
+        self.Tree.bind('<Double-1>', self.openweb)
 
-        pd_title.grid(row=1,column=0)
-        pd_price.grid(row=1,column=1)
-        pd_discount.grid(row=1,column=2)
-        pd_reviews.grid(row=1,column=3)
-        pd_comments.grid(row=1,column=4)
-        pd_link.grid(row=1,column=5)
+        self.Tree.pack(fill=BOTH, expand=YES,pady=10)
 
+    def insert_rows(self, results):
+        """Insert new row in tree search results"""
+        if results["flipkart"] != None and results["amazon"] != None:
+            for i,(flpt_result,amzn_result) in enumerate(zip(results["flipkart"],results["amazon"]), start=1):
+                if flpt_result["comments"] != None:
+                    cmt = flpt_result["comments"]
+                    cmnt = "Pos - "+str(ceil(cmt["pos"]))+",  Neg - "+str(ceil(cmt["neg"]))+",  Neu - "+str(ceil(cmt["neu"]))
+                else:
+                    cmnt = "No Reviews"
 
-        #datas
-        for i,flpt_result in enumerate(results["flipkart"], start=2):
-            #if i==10:
-            #    break
-            #title = re.split(pattern = r"[\|\,\(\/\-]",string = flpt_result["title"])[0]
-            title = flpt_result["title"].split()[0:4]
-            pd_title = Label(FlipkartFrame, text=title)
-            pd_price = Label(FlipkartFrame, text=flpt_result["originalPrice"])
-            pd_discount = Label(FlipkartFrame, text=flpt_result["discountPrice"])
-            pd_rating = Label(FlipkartFrame, text=flpt_result["rating"])
-            if flpt_result["comments"] != None:
-                cmt = flpt_result["comments"]
-                cmnt = "Positive:"+str(ceil(cmt["pos"]))+"  Negative:"+str(ceil(cmt["neg"]))+"  Neutral:"+str(ceil(cmt["neu"]))
-                pd_comments = Label(FlipkartFrame, text=cmnt)
-            else:
-                pd_comments = Label(FlipkartFrame, text="No Comments")
-            pd_link = Label(FlipkartFrame, text="Product", fg="blue", cursor="hand2")
-            pd_link.bind("<Button-1>", lambda e,link=flpt_result["productUrl"]: webbrowser.open(link))
-            print(flpt_result["productUrl"])
+                if amzn_result["comments"] != None:
+                    cmt1 = amzn_result["comments"]
+                    cmnt1 = "Pos - "+str(ceil(cmt1["pos"]))+",  Neg - "+str(ceil(cmt1["neg"]))+",  Neu - "+str(ceil(cmt1["neu"]))
+                else:
+                    cmnt1 = "No Reviews"
 
-            pd_title.grid(row=i,column=0)
-            pd_price.grid(row=i,column=1)
-            pd_discount.grid(row=i,column=2)
-            pd_rating.grid(row=i,column=3)
-            pd_comments.grid(row=i,column=4)
-            pd_link.grid(row=i,column=5)
+                self.Tree.insert(
+                    parent="",
+                    index="end",
+                    iid=i,
+                    values=(
+                    flpt_result["title"].split()[0:4],flpt_result["originalPrice"],flpt_result["discountPrice"],flpt_result["rating"],cmnt,
+                    amzn_result["title"].split()[0:4],amzn_result["originalPrice"],amzn_result["discountPrice"],amzn_result["rating"],cmnt1)
+                    )
+        elif results["flipkart"] != None and results["amazon"] == None:
+            for i,flpt_result in enumerate(results["flipkart"], start=1):
+                if flpt_result["comments"] != None:
+                    cmt = flpt_result["comments"]
+                    cmnt = "Pos - "+str(ceil(cmt["pos"]))+",  Neg - "+str(ceil(cmt["neg"]))+",  Neu - "+str(ceil(cmt["neu"]))
+                else:
+                    cmnt = "No Reviews"
 
-            pd_title.grid_columnconfigure(0, weight=1)
-            pd_price.grid_columnconfigure(1, weight=1)
-            pd_discount.grid_columnconfigure(2, weight=1)
-            pd_rating.grid_columnconfigure(3, weight=1)
-            pd_comments.grid_columnconfigure(4, weight=1)
-            pd_link.grid_columnconfigure(5, weight=1)
+                self.Tree.insert(
+                    parent="",
+                    index="end",
+                    iid=i,
+                    values=(
+                    flpt_result["title"].split()[0:4],flpt_result["originalPrice"],flpt_result["discountPrice"],flpt_result["rating"],cmnt,
+                    "None","None","None","None","None")
+                    )
+        elif results["flipkart"] == None and results["amazon"] != None:
+            for i,amzn_result in enumerate(results["amazon"], start=1):
+                if amzn_result["comments"] != None:
+                    cmt = amzn_result["comments"]
+                    cmnt = "Pos - "+str(ceil(cmt["pos"]))+",  Neg - "+str(ceil(cmt["neg"]))+",  Neu - "+str(ceil(cmt["neu"]))
+                else:
+                    cmnt = "No Reviews"
 
-    else:
-        pass
+                self.Tree.insert(
+                    parent="",
+                    index="end",
+                    iid=i,
+                    values=(
+                    "None","None","None","None","None",
+                    amzn_result["title"].split()[0:4],amzn_result["originalPrice"],amzn_result["discountPrice"],amzn_result["rating"],cmnt)
+                    )
+        else:
+            self.Tree.insert(
+                    parent="",
+                    index="end",
+                    iid=1,
+                    values=(
+                    "None","None","None","None","None",
+                    "None","None","None","None","None",)
+                    )
 
-    if results["amazon"] != None:
-        #headers
-        pd_title = Label(AmazonFrame, text="Title")
-        pd_price = Label(AmazonFrame, text="Price")
-        pd_discount = Label(AmazonFrame, text="Discount Price")
-        pd_reviews = Label(AmazonFrame, text="Ratings")
-        pd_comments = Label(AmazonFrame, text="Comments")
-        pd_link = Label(AmazonFrame,text="Product Link")
+    def on_search(self):
+        """Search for a term based on the search type"""
+        search_term = self.term_var.get()
+        if search_term == '':
+            return
+        else:
+            self.Tree.delete(*self.Tree.get_children())
+            global results
+            results = sr.search_products(search_term)
+            self.insert_rows(results)
 
-
-        pd_title.grid(row=1,column=0)
-        pd_price.grid(row=1,column=1)
-        pd_discount.grid(row=1,column=2)
-        pd_reviews.grid(row=1,column=3)
-        pd_comments.grid(row=1,column=4)
-        pd_link.grid(row=1,column=5)
-
-        #datas
-        for i,amzn_result in enumerate(results["amazon"],start=2):
-            #if i==10:
-            #    break
-            #title = re.split(pattern = r"[\|\,\(\/\-]",string = amzn_result["title"])[0]
-            title = amzn_result["title"].split()[0:4]
-            pd_title = Label(AmazonFrame, text=title)
-            pd_price = Label(AmazonFrame, text=amzn_result["originalPrice"])
-            pd_discount = Label(AmazonFrame, text=amzn_result["discountPrice"])
-            pd_rating = Label(AmazonFrame, text=amzn_result["rating"])
-            if amzn_result["comments"] != None:
-                cmt = amzn_result["comments"]
-                cmnt = "Positive:"+str(ceil(cmt["pos"]))+"  Negative:"+str(ceil(cmt["neg"]))+"  Neutral:"+str(ceil(cmt["neu"]))
-                pd_comments = Label(AmazonFrame, text=cmnt)
-            else:
-                pd_comments = Label(AmazonFrame, text="No Comments")
-            pd_link = Label(AmazonFrame, text="Product", fg="blue", cursor="hand2")
-            pd_link.bind("<Button-1>", lambda e,link=amzn_result["productUrl"]: webbrowser.open(link))
-
-
-            pd_title.grid(row=i,column=0)
-            pd_price.grid(row=i,column=1)
-            pd_discount.grid(row=i,column=2)
-            pd_rating.grid(row=i,column=3)
-            pd_comments.grid(row=i,column=4)
-            pd_link.grid(row=i,column=5)
-
-            pd_title.grid_columnconfigure(0, weight=1)
-            pd_price.grid_columnconfigure(1, weight=1)
-            pd_discount.grid_columnconfigure(2, weight=1)
-            pd_rating.grid_columnconfigure(3, weight=1)
-            pd_comments.grid_columnconfigure(4, weight=1)
-            pd_link.grid_columnconfigure(5, weight=1)
-    else:
-        pass
-
-
-if __name__ == "__main__":
-    ResultPage()
-    window.mainloop()
+if __name__ == '__main__':
+    app = ttk.Window("Product Search", "journal")
+    app.state("zoomed")
+    ProductSearch(app)
+    app.mainloop()
