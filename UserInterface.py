@@ -2,7 +2,6 @@ import ttkbootstrap as ttk
 from tkinter import messagebox
 from ttkbootstrap.constants import *
 import SearchAndRetrieve as sr
-from math import ceil
 import webbrowser
 
 class ProductSearch(ttk.Frame):
@@ -90,19 +89,19 @@ class ProductSearch(ttk.Frame):
 
         self.Tree.pack(fill=BOTH, expand=YES,pady=10)
 
-    def insert_rows(self, results):
+    def insert_rows(self):
         """Insert new row in tree search results"""
         if results["flipkart"] != None and results["amazon"] != None:
             for i,(flpt_result,amzn_result) in enumerate(zip(results["flipkart"],results["amazon"]), start=1):
                 if flpt_result["comments"] != None:
                     cmt = flpt_result["comments"]
-                    cmnt = "Pos - "+str(ceil(cmt["pos"]))+",  Neg - "+str(ceil(cmt["neg"]))+",  Neu - "+str(ceil(cmt["neu"]))
+                    cmnt = "Pos - "+str(cmt["pos"])+",  Neg - "+str(cmt["neg"])+",  Neu - "+str(cmt["neu"])
                 else:
                     cmnt = "No Reviews"
 
                 if amzn_result["comments"] != None:
                     cmt1 = amzn_result["comments"]
-                    cmnt1 = "Pos - "+str(ceil(cmt1["pos"]))+",  Neg - "+str(ceil(cmt1["neg"]))+",  Neu - "+str(ceil(cmt1["neu"]))
+                    cmnt = "Pos - "+str(cmt["pos"])+",  Neg - "+str(cmt["neg"])+",  Neu - "+str(cmt["neu"])
                 else:
                     cmnt1 = "No Reviews"
 
@@ -118,7 +117,7 @@ class ProductSearch(ttk.Frame):
             for i,flpt_result in enumerate(results["flipkart"], start=1):
                 if flpt_result["comments"] != None:
                     cmt = flpt_result["comments"]
-                    cmnt = "Pos - "+str(ceil(cmt["pos"]))+",  Neg - "+str(ceil(cmt["neg"]))+",  Neu - "+str(ceil(cmt["neu"]))
+                    cmnt = "Pos - "+str(cmt["pos"])+",  Neg - "+str(cmt["neg"])+",  Neu - "+str(cmt["neu"])
                 else:
                     cmnt = "No Reviews"
 
@@ -134,7 +133,7 @@ class ProductSearch(ttk.Frame):
             for i,amzn_result in enumerate(results["amazon"], start=1):
                 if amzn_result["comments"] != None:
                     cmt = amzn_result["comments"]
-                    cmnt = "Pos - "+str(ceil(cmt["pos"]))+",  Neg - "+str(ceil(cmt["neg"]))+",  Neu - "+str(ceil(cmt["neu"]))
+                    cmnt = "Pos - "+str(cmt["pos"])+",  Neg - "+str(cmt["neg"])+",  Neu - "+str(cmt["neu"])
                 else:
                     cmnt = "No Reviews"
 
@@ -165,7 +164,11 @@ class ProductSearch(ttk.Frame):
             self.Tree.delete(*self.Tree.get_children())
             global results
             results = sr.search_products(search_term)
-            self.insert_rows(results)
+            if results["flipkart"] != None:
+                results["flipkart"] = sorted(results["flipkart"], key = lambda x:x["discountPrice"] if x["discountPrice"] != "No discount price" else 0)
+            if results["amazon"] != None:
+                results["amazon"] = sorted(results["amazon"], key = lambda x:x["discountPrice"] if x["discountPrice"] != "No discount price" else 0)
+            self.insert_rows()
 
 if __name__ == '__main__':
     app = ttk.Window("Product Search", "journal")

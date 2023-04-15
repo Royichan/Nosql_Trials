@@ -72,7 +72,7 @@ def get_history(search_string):
             history_db = db.History
             print("History collection connected")
             count = history_db.count_documents({"keyword":search_string,"date":str(datetime.today().date())})
-            if count > 0:
+            if count > 0 and count == 2:
                 history = history_db.find({"keyword":search_string,"date":str(datetime.today().date())})
                 return True,history
             else:

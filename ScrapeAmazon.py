@@ -79,7 +79,7 @@ def get_idividual_amazon_product_details(amazon_products_links):
             #print("No discount")
         else:
             amazon_discount_price = amazon_discount_price.get_text().split("$")[1]
-            amazon_product["discountPrice"] = amazon_discount_price.replace(",","")   
+            amazon_product["discountPrice"] = float(amazon_discount_price.replace(",",""))   
             #print("discount price : ",amazon_discount_price)
 
         amazon_rating = amazon_page.find("span", attrs={"id":"acrCustomerReviewText"})

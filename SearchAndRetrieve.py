@@ -34,17 +34,6 @@ def search_products_in_web(search_string):
         for product in flipkart_details:
             product["comments"] = snt.analyze_reviews(product["comments"])
             #print("com : ", product["comments"])
-        print("Uploading Flipkart Deatils to DB")           
-        flipkart_db_ids = db.upload_flipkart_products(flipkart_details)
-        if flipkart_db_ids is not None:
-            print("Uploading documents to History DB")
-            flipkart_history = {}
-            flipkart_history["keyword"] = search_string
-            flipkart_history["date"] = str(datetime.today().date())
-            flipkart_history["flipkartIds"] = flipkart_db_ids
-            history_db_flag = db.insert_history(flipkart_history)
-        else:
-            print("Not able to upload Flipkart to history")
         results["flipkart"] = flipkart_details 
     else:
         print("No flipkart products found")
@@ -56,6 +45,24 @@ def search_products_in_web(search_string):
         for product in amazon_details:
             product["comments"] = snt.analyze_reviews(product["comments"])
             #print("com : ", product["comments"])
+        results["amazon"] = amazon_details 
+    else:
+        print("No amazon products found")
+        results["amazon"] = None
+    #Uploading Data to History DB
+    if amazon_products_links is not None and flipkart_products_links is not None:
+        print("Uploading Flipkart Deatils to DB")           
+        flipkart_db_ids = db.upload_flipkart_products(flipkart_details)
+        if flipkart_db_ids is not None:
+            print("Uploading documents to History DB")
+            flipkart_history = {}
+            flipkart_history["keyword"] = search_string
+            flipkart_history["date"] = str(datetime.today().date())
+            flipkart_history["flipkartIds"] = flipkart_db_ids
+            history_db_flag = db.insert_history(flipkart_history)
+        else:
+            print("Not able to upload Flipkart to history")
+
         print("Uploading Amazon Deatils to DB")
         amazon_db_ids = db.upload_amazon_products(amazon_details)
         if amazon_db_ids is not None:
@@ -67,10 +74,9 @@ def search_products_in_web(search_string):
             history_db_flag = db.insert_history(amazon_history)
         else:
             print("Not able to upload Amazon to history")
-        results["amazon"] = amazon_details 
     else:
-        print("No amazon products found")
-        results["amazon"] = None
+        print("Not Uplodaing Data to History DB")
+
     return results
 
 #function to search product and upload details
@@ -97,6 +103,7 @@ def search_products(search_string):
         print("Completed Data Retrival from DB")
         return results
     else:
+        print("Product not Found in History DB")
         results = search_products_in_web(search_string.lower())
         #print(results)
         print("Completed Data Retrival from Web")
